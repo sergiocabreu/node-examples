@@ -4,7 +4,9 @@ const fs = require("fs");
 const PDFExtract = require('pdf.js-extract').PDFExtract;
 const pdfExtract = new PDFExtract();
 
-let pdf = "./pdf-extract/pdf/Agendamento 31-03-2021(1)_compressed.pdf";
+// let pdf = "c:/Users/dev/GitHub/node-examples/vacinacao/31.03Agendamentos_31_03_2021_compressed.pdf";
+
+let pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/Agendamento%2001-04-2021.pdf';
 
 pdfExtract.extract(pdf, {} /* options*/, function (err, data) {
 
@@ -29,6 +31,7 @@ function isTemNome(linha) {
 }
 
 function isNomeNaLista(nome ) {
-	return nome === 'ABEL DOS SANTOS SILVA' ||
-		   nome === 'AGENOR BARBOSA'
+	return nome === 'RAIMUNDO NONATO RODRIGUES' ||
+		   nome === 'MARIA DE FATIMA MACHADO DOS SANTOS' ||
+		   nome === 'MARIA DE FÁTIMA MACHADO DOS SANTOS'
 }
