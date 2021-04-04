@@ -14,7 +14,7 @@ buscarListaPdf().then((value) => {
 
   baixarArquivo(arquivo.link).then((caminho)=> {
     console.log('Arquivo baixado no diretório: ', caminho);
-    consultarInformacoesPdf(caminho).then( resultado => console.log(resultado));
+    // consultarInformacoesPdf(caminho).then( resultado => console.log(resultado));
   });
 
 }, error => console.log(error));
@@ -84,7 +84,8 @@ function isTemNome(linha) {
 }
 
 function isNomeNaLista(nome ) {
-	return nome === 'ABEL DOS SANTOS SILVA' ||
-		   nome === 'AGENOR BARBOSA' ||
-       nome === 'RAIMUNDO NONATO RODRIGUES'
+	return nome === 'FRANCISCO MENDES' ||
+       nome === 'RAIMUNDO NONATO RODRIGUES' ||
+       nome === 'BENEDITA AURINDO DE SOUZA' ||
+       nome === 'LUCIA DE FATIMA FRANÇA DOS SANTOS'
 }
