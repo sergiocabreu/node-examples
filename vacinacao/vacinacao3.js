@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require('path');
 const axios = require("axios").default;
 const PDFExtract = require('pdf.js-extract').PDFExtract;
+const { stringify } = require('querystring');
 const pdfExtract = new PDFExtract();
 
 const nomes = [
@@ -13,11 +14,14 @@ const nomes = [
 ];
 
 const pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/lista-vacinacao-pdf/Agendados-05.04.2021-PDF.pdf';
-buscarListaVacinacao().then(lista =>{
-  return baixarArquivo(lista[0].link);
+buscarListaVacinacao().then(listaVacinacao => {
+    console.log('Arquivo encontrado:', listaVacinacao[0].titulo);
+    return baixarArquivo('https://saude.fortaleza.ce.gov.br/images/coronavirus/listas/Agendados-05.04.2021-PDF.pdf');
 })
-.then( r => {
-  return getArquivo(pdf);
+.then( caminhoArquivo => {
+    console.log('Arquivo salvo em: ', caminhoArquivo);
+    const path = caminhoArquivo.replace(/\\/g, '/');
+    return getArquivo(path);
 })
 .then( arquivo => {
   return consultarInformacoesPdf(arquivo, nomes)
@@ -50,42 +54,37 @@ function baixarArquivo(fileUrl) {
       responseType: 'stream'
     })
     .then(function (response) {
-
       const fileName = path.basename(fileUrl);
-      const pdfDirectory = path.resolve(__dirname, "./lista-vacinacao-pdf/");
+      const pdfDirectory = path.resolve(__dirname, "../vacinacao/lista-vacinacao-pdf/");
       const caminhoArquivo = path.join(pdfDirectory, fileName)
       response.data.pipe(fs.createWriteStream(caminhoArquivo));
-
-      // console.log('******DIRETORIO VACINACAO', path.resolve(__dirname));
-        // console.log('******FILE NAME', fileName);
-        // console.log('******PDF DIRECTORY', pdfDirectory);
-        // console.log('******CAMINHO ARQUIVO', caminhoArquivo);
-        resolve(caminhoArquivo)
+      resolve(caminhoArquivo);
     });
   });
 }
 
 function getArquivo(caminhoArquivo) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(caminhoArquivo, (err, data)=> {
-      if(err){
-          console.log(err)
-          throw err
-      }else{
-        resolve(data);
-      }
+    console.log('Recuperando arquivo: ', caminhoArquivo);
+    return new Promise((resolve, reject) => {
+        fs.readFile(caminhoArquivo, (err, data)=> {
+        if(err){
+            console.log(err)
+            throw err
+        }else{
+            resolve(data);
+        }
+        });
     });
-  });
 }
 
-function consultarInformacoesPdf(arquivo, nomes) {
-  
+function consultarInformacoesPdf(buffer, nomes) {
+  console.log(buffer.byteLength);
   return new Promise( (resolve, reject) => {
-    pdfExtract.extractBuffer(arquivo, {}, (err, data) => {
+    pdfExtract.extractBuffer(buffer, {}, (err, data) => {
       if (err) {
         reject(err);
       }
-  
+      console.log(data);
       let paginas = [];
       data.pages.forEach(page => {
         const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
