@@ -4,37 +4,63 @@ const fs = require("fs");
 const PDFExtract = require('pdf.js-extract').PDFExtract;
 const pdfExtract = new PDFExtract();
 
-// let pdf = "c:/Users/dev/GitHub/node-examples/vacinacao/31.03Agendamentos_31_03_2021_compressed.pdf";
+const nomes = [
+	'FRANCISCO MENDES',
+	'RAIMUNDO NONATO RODRIGUES',
+	'BENEDITA AURINDO DE SOUZA',
+	'LUCIA DE FATIMA FRANÇA DOS SANTOS'
+  ];
+let pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/Agendados-05.04.2021-PDF.pdf';
 
-let arquivo = '03.04Lista_Agendados_03.04';
-let pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/'+ arquivo +'.pdf';
+consultarInformacoesPdf(pdf, nomes).then( result => console.log(result));
+consultarInformacoesPd2(pdf, nomes);
 
-pdfExtract.extract(pdf, {} /* options*/, function (err, data) {
+function consultarInformacoesPd2(pdf, nomes) {
 
-	if (err) {
-		return console.error(err);
-	}
+	pdfExtract.extract(pdf, {}, function (err, data) {
+		if (err) {
+			return console.error(err);
+		}
 
-	let paginas = [];
-	data.pages.forEach(page => {
-		const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
-		paginaArray.forEach( p => paginas.push(p));
+		let paginas = [];
+		data.pages.forEach(page => {
+			const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+			paginaArray.forEach( p => paginas.push(p));
+		});
+
+		let achou = paginas.filter( linha => isTemNome(linha) );
+
+		console.log('Achou, ', achou);
 	});
+}
 
-	let achou = paginas.filter( linha => isTemNome(linha) );
-
-	console.log('Achou, ', achou);
-});
+async function consultarInformacoesPdf(urlPdf, nomes) {
+	return new Promise( (resolve, reject) => {
+		const buffer = fs.readFileSync(urlPdf);
+	  	pdfExtract.extractBuffer(buffer, {}, (err, data) => {
+			if (err) {
+			reject(err);
+			}
+	
+			let paginas = [];
+			data.pages.forEach(page => {
+			const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+			paginaArray.forEach( p => paginas.push(p));
+			});
+	
+			let achou = paginas.filter( linha => isTemNome(linha, nomes) );
+			resolve(achou);
+		});
+	});
+}
 
 function isTemNome(linha) {
 	let r = linha.filter( info => isNomeNaLista(info));
 	return r && r.length > 0;
 }
 
-function isNomeNaLista(nome ) {
-		   return nome === 'FRANCISCO MENDES' ||
-		   nome === 'RAIMUNDO NONATO RODRIGUES' ||
-		   nome === 'BENEDITA AURINDO DE SOUZA' ||
-		   nome === 'LUCIA DE FATIMA FRANÇA DOS SANTOS' ||
-		   nome === 'MARIA DE FATIMA MACHADO DOS SANTOS' 
-}
+function isNomeNaLista(nome) {
+	const r = nomes.filter(n => n === nome);
+	return r && r.length > 0;
+  }
+
