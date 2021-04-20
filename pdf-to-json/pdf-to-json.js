@@ -1,16 +1,13 @@
-let fs = require('fs'), PDFParser = require("pdf2json");
+// https://www.npmjs.com/package/pdf2json
 
-    let pdfParser = new PDFParser();
+const fs = require("fs");
+const PDFParser = require("pdf2json");
 
-    pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
-    pdfParser.on("pdfParser_dataReady", pdfData => {
-        // fs.writeFile("teste.json", JSON.stringify(pdfData.getRawTextContent()));
-        // console.log(pdfData);
-        // pdfData.formImage.Pages.Texts.map(r => r.R).forEach(campo => console.log(campo));
-        //pdfData.formImage.Pages.forEach(campo => console.log(campo));
-        // console.log( JSON.stringify(pdfData.formImage.Pages) );
-        console.log( JSON.stringify(pdfData.formImage.Pages) );
-    });
+let pdfParser = new PDFParser();
 
-//    pdfParser.loadPDF("./pdf-to-json/Agendamento-dia-30-03-2021_compressed.pdf");
-pdfParser.loadPDF("./pdf-to-json/teste.pdf");
+pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
+pdfParser.on("pdfParser_dataReady", pdfData => {
+    fs.writeFileSync("D:/F1040EZ.json", JSON.stringify(pdfData));
+});
+
+pdfParser.loadPDF("D:/lista-vacinacao-pdf/19.04-IDOSOS-Dose1-Dia1904_2021.pdf");
