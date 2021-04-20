@@ -20,21 +20,6 @@ module.exports = {
   
     browser.close()
     return result
-  }, 
-  download: (url, caminho) => {
-    console.log('Baixando arquivo:', url);
-    return new Promise((resolve, reject) => {
-      https.get(url, (res) => {
-        const nomeArquivo = path.basename(url);
-        const caminhoArquivo = path.join(caminho, nomeArquivo)
-        const filePath = fs.createWriteStream(caminhoArquivo);
-        res.pipe(filePath);
-        filePath.on('finish',() => {
-          filePath.close();
-          resolve(caminhoArquivo);
-        })
-      })
-    });
   }
 }
 

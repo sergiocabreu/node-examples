@@ -1,20 +1,9 @@
 const fs = require("fs");
 const PDFExtract = require('pdf.js-extract').PDFExtract;
 const pdfExtract = new PDFExtract();
+PDFParser = require("pdf2json");
 
 module.exports = {
-	getArquivo: async (caminhoArquivo) => {
-		console.log('Recuperando arquivo: ', caminhoArquivo);
-		return new Promise((resolve, reject) => {
-			fs.readFile(caminhoArquivo, (err, data)=> {
-			if(err){
-				reject(err);
-			}else{
-				resolve(data);
-			}
-			});
-		});
-	},
 	consultarInformacoesPdfBuffer: async(arquivo, nomes) => {
 	  
 		return new Promise( (resolve, reject) => {
@@ -33,6 +22,19 @@ module.exports = {
 				let achou = paginas.filter( linha => isTemNome(linha, nomes) );
 				resolve(achou);
 			});
+		});
+	},
+	extrairTextoInArray: async (caminho) => {
+		return new Promise( (resolve, reject) => {
+			let pdfParser = new PDFParser(this, 1);
+
+			pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
+			pdfParser.on("pdfParser_dataReady", pdfData => {
+				const text = pdfParser.getRawTextContent();
+				resolve(text);
+			});
+	
+			pdfParser.loadPDF(caminho);
 		});
 	}
 }
