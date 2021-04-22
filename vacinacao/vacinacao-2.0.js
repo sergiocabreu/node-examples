@@ -1,7 +1,7 @@
 const listaVacinacaoUtil = require('./util/lista-vacinacao-util')
 const extrairInfoPdfUtil = require('./util/extrair-info-pdf-util')
 const arquivoUtil = require('./util/arquivo-util')
-const elasticSearchUtil = require('./util/busca-elasticsearch')
+const elasticSearchUtil = require('./util/elasticsearch-util')
 
 const nomes = [
   'MARIA DE LOURDES ARAUJO RODRIGUES',
@@ -21,9 +21,9 @@ async function baixarArquivos () {
   
   let listas = await listaVacinacaoUtil.buscarListaVacinacao();
 
-  // const local = 'D:/lista-vacinacao-pdf'
-  const local = 'D:/teste';
-  listas.slice(0, 4).forEach(lista => {
+  const local = 'D:/lista-vacinacao-pdf'
+  // const local = 'D:/teste';
+  listas.forEach(lista => {
     arquivoUtil.download(lista.link, local)
                .then( caminho => console.log(`Arquivo ${lista.titulo} salvo em caminho ${caminho}`))
   });
@@ -31,21 +31,27 @@ async function baixarArquivos () {
 
 async function carregarArquivosNoElasticSearch() {
 
-  const local = 'D:/teste';
+  const local = 'D:/lista-vacinacao-pdf'
+  // const local = 'D:/teste';
   const arquivosLocal = await arquivoUtil.listaArquivos(local);
+
+  console.log(arquivosLocal);
 
   arquivosLocal.forEach(nome => {
     const caminho = local + '/' + nome;
-    extrairInfoPdfUtil.extrairTextoInArray(caminho).then(r => {
-      const c = {
-                  nomeArquivo: nome,
-                  texto: r
-                };
-      elasticSearchUtil.carregarDados(c);
-    });
+    
+    extrairInfoPdfUtil.extrairConteudo(caminho).then(conteudo => {
+        const dados = {
+          nomeArquivo: nome,
+          conteudo: conteudo
+        };
+
+        elasticSearchUtil.carregarDados(dados);
+
+      });    
   });
 }
 
-// baixarArquivos();
+//baixarArquivos();
 carregarArquivosNoElasticSearch();
 // setInterval(run, 60000);

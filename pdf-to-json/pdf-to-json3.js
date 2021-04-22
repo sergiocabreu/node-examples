@@ -7,12 +7,16 @@ let pdfParser = new PDFParser();
 
 pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
 pdfParser.on("pdfParser_dataReady", pdfData => {
-    const nomeArquivo = pdfData.formImage.Agency;
+
+    const text = pdfParser.getRawTextContent().split('\\r\\n');
+    console.log(text);
+
+    /*const nomeArquivo = pdfData.formImage.Agency;
 
     const texts = pdfData.formImage.Pages.map( page => page.Texts);
     const rGrande = texts.map( text => text);
 
-    rGrande.forEach( resultado => console.log(resultado));
+    rGrande.forEach( resultado => console.log(resultado));*/
 
     // const rs = texts.map( text => text.R);
 

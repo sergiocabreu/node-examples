@@ -4,6 +4,19 @@ const pdfExtract = new PDFExtract();
 PDFParser = require("pdf2json");
 
 module.exports = {
+	extrairConteudo: (caminho) => {
+		return new Promise( (resolve, reject) => {
+			let pdfParser = new PDFParser(this, 1);
+			
+			pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
+			pdfParser.on("pdfParser_dataReady", pdfData => {
+				const text = pdfParser.getRawTextContent();
+				resolve(text)
+			});
+			
+			pdfParser.loadPDF(caminho);
+		});
+	},
 	consultarInformacoesPdfBuffer: async(arquivo, nomes) => {
 	  
 		return new Promise( (resolve, reject) => {
@@ -24,16 +37,28 @@ module.exports = {
 			});
 		});
 	},
+	extrairLinhas: (caminho) => {
+		pdfExtract.extract(caminho, {}, function (err, data) {
+			data.pages.forEach(page => {
+				let paginas = [];
+				const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+				 paginaArray.forEach( p => paginas.push(p));
+
+				// const paginas = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+				console.log(paginas);
+			});
+		});
+	},
 	extrairTextoInArray: async (caminho) => {
 		return new Promise( (resolve, reject) => {
 			let pdfParser = new PDFParser(this, 1);
-
+			
 			pdfParser.on("pdfParser_dataError", errData => console.error(errData.parserError) );
 			pdfParser.on("pdfParser_dataReady", pdfData => {
-				const text = pdfParser.getRawTextContent();
-				resolve(text);
+				const text = pdfParser.getRawTextContent().split('\r\n');
+				resolve(text)
 			});
-	
+			
 			pdfParser.loadPDF(caminho);
 		});
 	}
