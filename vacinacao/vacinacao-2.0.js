@@ -37,21 +37,24 @@ async function carregarArquivosNoElasticSearch() {
 
   console.log(arquivosLocal);
 
-  arquivosLocal.forEach(nome => {
-    const caminho = local + '/' + nome;
-    
-    extrairInfoPdfUtil.extrairConteudo(caminho).then(conteudo => {
-        const dados = {
-          nomeArquivo: nome,
-          conteudo: conteudo
-        };
+  arquivosLocal.forEach(nomeArquivo => {
 
-        elasticSearchUtil.carregarDados(dados);
+    const caminho = local + '/' + nomeArquivo;
 
-      });    
+    extrairInfoPdfUtil.extrairConteudoEmLinhas(caminho)
+                      .then(linhas => {
+                          const dados = linhas.map(linha => {
+                            return {
+                              nome: linha[0],
+                              conteudo: linha.join(" "),
+                              nomeArquivo: nomeArquivo,
+                            };
+                          });
+                        elasticSearchUtil.carregarDados(dados);
+                      });  
   });
 }
 
-//baixarArquivos();
+// baixarArquivos();
 carregarArquivosNoElasticSearch();
 // setInterval(run, 60000);

@@ -17,6 +17,28 @@ module.exports = {
 			pdfParser.loadPDF(caminho);
 		});
 	},
+	extrairConteudoEmLinhas: (caminho) => {
+		return new Promise( (resolve, reject) => {
+			const pdfExtract = new PDFExtract();
+			pdfExtract.extract(caminho, {}, function (err, data) {
+
+				if (err) {
+					reject(err);
+				}
+				
+				let linhas = [];
+				data.pages.forEach(page => {
+					const lines = PDFExtract.utils.pageToLines(page, 2);
+					const rows = PDFExtract.utils.extractTextRows(lines);
+					rows.forEach( linha => {
+						linhas.push(linha);
+					});
+				});
+
+				resolve(linhas);
+			});
+		});
+	},
 	consultarInformacoesPdfBuffer: async(arquivo, nomes) => {
 	  
 		return new Promise( (resolve, reject) => {

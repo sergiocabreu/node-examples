@@ -20,6 +20,17 @@ async function run (client, dataset, index) {
     body: {
       mappings: {
         properties: {
+          nome: {
+            type: 'text',
+            fields: {
+              original: {
+                type: "keyword",
+                index: true
+              }
+            },
+            type: "keyword",
+            index: true
+          },
           conteudo: { type: 'text' },
           nomeArquivo: { type: 'keyword' }
         }
@@ -27,12 +38,10 @@ async function run (client, dataset, index) {
     }
   }, { ignore: [400] });
 
-  const { body: bulkResponse } = await client.index({
-    index: index,
-    body: {
-      ...dataset
-    }
-  })
+  
+  const body = dataset.flatMap(doc => [{ index: { _index: index} }, doc])
+
+  const { body: bulkResponse } = await client.bulk({ refresh: true, body })
 
   const { body: count } = await client.count({ index: index })
   console.log(count)
