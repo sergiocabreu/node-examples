@@ -12,16 +12,24 @@ const nomes = [
   'LUCIA DE FATIMA FRANÇA DOS SANTOS'
 ];
 
-const pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/lista-vacinacao-pdf/Agendados-05.04.2021-PDF.pdf';
-buscarListaVacinacao().then(lista =>{
-  return baixarArquivo(lista[0].link);
+console.log('Bucando lista de vacinação...');
+
+buscarListaVacinacao().then((value) => {
+  let arquivo = value[0];
+  console.log(`Arquivo encontrado: ${arquivo.titulo} (${arquivo.link})`);
+  return baixarArquivo(arquivo.link);
 })
-.then( r => {
-  return getArquivo(pdf);
+.then(caminho => {
+  console.log('Arquivo salvo em: ', caminho);
+  const path = caminho.replace(/\\/g, '/');
+  console.log('path ', path);
+  return getArquivo(path);
 })
-.then( arquivo => {
-  return consultarInformacoesPdf(arquivo, nomes)
-}).then( r => console.log(r) );
+.then(arquivo => {
+  return consultarInformacoesPdf(arquivo, nomes);
+}) 
+.then((achados) => console.log(achados))
+.catch(error => console.log(error));
 
 async function buscarListaVacinacao() {
   const browser = await puppeteer.launch()
@@ -52,7 +60,7 @@ function baixarArquivo(fileUrl) {
     .then(function (response) {
 
       const fileName = path.basename(fileUrl);
-      const pdfDirectory = path.resolve(__dirname, "./lista-vacinacao-pdf/");
+      const pdfDirectory = path.resolve(__dirname, "../vacinacao/lista-vacinacao-pdf/");
       const caminhoArquivo = path.join(pdfDirectory, fileName)
       response.data.pipe(fs.createWriteStream(caminhoArquivo));
 
@@ -95,6 +103,53 @@ function consultarInformacoesPdf(arquivo, nomes) {
       let achou = paginas.filter( linha => isTemNome(linha, nomes) );
       resolve(achou);
 		});
+  });
+}
+
+function consultarInformacoesPdf3(urlPdf, nomes) {
+  return new Promise( (resolve, reject) => {
+    // const url = path.resolve(__dirname, 'Agendados-05.04.2021-PDF.pdf').replace(/\\/g, '/');
+    const url = urlPdf;
+
+    console.log('DIRETORIO', url);
+    const buffer = fs.readFileSync(url);
+    pdfExtract.extractBuffer(buffer, {}, (err, data) => {
+      if (err) {
+        reject(err);
+      }
+  
+      let paginas = [];
+      data.pages.forEach(page => {
+        const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+        paginaArray.forEach( p => paginas.push(p));
+      });
+  
+      let achou = paginas.filter( linha => isTemNome(linha, nomes) );
+      resolve(achou);
+		});
+  });
+}
+
+
+async function consultarInformacoesPdf2(urlPdf, nomes) {
+  return new Promise( (resolve, reject) => {
+    pdfExtract.extract(urlPdf, {}, function (err, data) {
+
+      if (err) {
+        reject(err);
+      }
+  
+      let paginas = [];
+      data.pages.forEach(page => {
+        const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+        paginaArray.forEach( p => paginas.push(p));
+      });
+  
+      let achou = paginas.filter( linha => isTemNome(linha, nomes) );
+ 
+      // console.log(achou);
+      resolve(achou);
+    });
   });
 }
 

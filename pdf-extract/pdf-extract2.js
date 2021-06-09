@@ -1,3 +1,5 @@
+// https://github.com/ffalt/pdf.js-extract
+
 const fs = require("fs");
 const PDFExtract = require('pdf.js-extract').PDFExtract;
 const pdfExtract = new PDFExtract();

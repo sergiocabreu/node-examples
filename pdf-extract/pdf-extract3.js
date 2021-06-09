@@ -1,55 +1,66 @@
+// https://github.com/ffalt/pdf.js-extract
+
 const fs = require("fs");
 const PDFExtract = require('pdf.js-extract').PDFExtract;
 const pdfExtract = new PDFExtract();
 
-let pdf = "./pdf-extract/pdf/Agendamento 31-03-2021(1)_compressed.pdf";
-// let pdf2 = "./pdf-extract/pdf/teste.pdf";
-// let pdf3 = 'https://saude.fortaleza.ce.gov.br/images/coronavirus/listas/Agendamento-dia-30-03-2021_compressed.pdf';
+const nomes = [
+	'FRANCISCO MENDES',
+	'RAIMUNDO NONATO RODRIGUES',
+	'BENEDITA AURINDO DE SOUZA',
+	'LUCIA DE FATIMA FRANÇA DOS SANTOS'
+  ];
+let pdf = 'c:/Users/dev/GitHub/node-examples/vacinacao/Agendados-05.04.2021-PDF.pdf';
 
-pdfExtract.extract(pdf, {} /* options*/, function (err, data) {
-	if (err) {
-		return console.error(err);
-	}
+consultarInformacoesPdf(pdf, nomes).then( result => console.log(result));
+consultarInformacoesPd2(pdf, nomes);
 
-	const lines = PDFExtract.utils.pageToLines(data.pages[0], 2)
-	const result = lines.map(linha => {
-		let coluna = linha.map( coluna => coluna.str);
-		return {
-			"nome": coluna[0],
-			"bairro": coluna[2],
-			"local": coluna[3],
-			"hora": coluna[4],
-			"nascimento": coluna[5]
+function consultarInformacoesPd2(pdf, nomes) {
+
+	pdfExtract.extract(pdf, {}, function (err, data) {
+		if (err) {
+			return console.error(err);
 		}
+
+		let paginas = [];
+		data.pages.forEach(page => {
+			const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+			paginaArray.forEach( p => paginas.push(p));
+		});
+
+		let achou = paginas.filter( linha => isTemNome(linha) );
+
+		console.log('Achou, ', achou);
 	});
-
-
-	/*
-	result.forEach(element => {
-		console.log(element);
-	});
-	*/
-	var achou = result.filter(pessoa => pessoa.nome === 'ZULMIRA FERREIRA GOMES');
-	console.log(achou);
-	 //result.forEach(data => console.log(data));
-});
-
-function map1(coluna) {
-	return {
-		"nome": coluna[1],
-		"bairro": coluna[2],
-		"local": coluna[3],
-		"hora": coluna[4],
-		"nascimento": coluna[5]
-	}
 }
 
-function map2(coluna) {
-	return {
-		"nome": coluna[1],
-		"bairro": coluna[2],
-		"local": coluna[3],
-		"hora": coluna[4],
-		"nascimento": coluna[5]
-	}
+async function consultarInformacoesPdf(urlPdf, nomes) {
+	return new Promise( (resolve, reject) => {
+		const buffer = fs.readFileSync(urlPdf);
+	  	pdfExtract.extractBuffer(buffer, {}, (err, data) => {
+			if (err) {
+			reject(err);
+			}
+	
+			let paginas = [];
+			data.pages.forEach(page => {
+			const paginaArray = PDFExtract.utils.extractTextRows(PDFExtract.utils.pageToLines(page, 2));
+			paginaArray.forEach( p => paginas.push(p));
+			});
+	
+			let achou = paginas.filter( linha => isTemNome(linha, nomes) );
+			resolve(achou);
+		});
+	});
 }
+
+function isTemNome(linha) {
+	let r = linha.filter( info => isNomeNaLista(info));
+	return r && r.length > 0;
+}
+
+function isNomeNaLista(nome) {
+	const r = nomes.filter(n => n === nome);
+	return r && r.length > 0;
+  }
+
